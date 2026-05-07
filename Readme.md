@@ -54,16 +54,44 @@ fastapi dev main.py
 
 ## 当前内容
 
-- SQLModel 模型定义
-- SQLite 数据库
-- POST 创建英雄
-- GET 查询英雄列表
-- GET 查询单个英雄
-- PATCH 更新英雄
-- DELETE 删除英雄
+- SQLModel 模型定义（HeroBase、Hero、HeroPublic、HeroCreate、HeroUpdate）
+- SQLite 数据库连接和会话管理
+- POST /heroes/：创建英雄（返回 HeroPublic，不含 secret_name）
+- GET /heroes/：查询英雄列表（支持分页 offset 和 limit）
+- GET /heroes/{hero_id}：查询单个英雄
+- PATCH /heroes/{hero_id}：部分更新英雄（只更新传入字段）
+- DELETE /heroes/{hero_id}：删除英雄
+- 依赖注入数据库会话（SessionDep）
+- 自动 API 文档生成
 
 ## 启动方式
 
 ```powershell
 fastapi dev test2.py
+```
+
+---
+
+# Week 2 CRUD Practice
+
+这是一个使用原生 SQLite3 模块的简单 CRUD 示例。
+
+## 当前内容
+
+- SQLite 数据库连接
+- 创建表结构
+- 插入数据
+- 查询数据
+- 事务提交
+
+## 运行方式
+
+```powershell
+python week2_crud.py
+```
+
+## 输出示例
+
+```
+[(1, 'apple', 12.5)]
 ```

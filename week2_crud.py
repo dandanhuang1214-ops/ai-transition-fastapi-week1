@@ -1,73 +1,35 @@
-from typing import Annotated
+import sqlite3  # 导入 SQLite 数据库模块
 
-from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+# 连接到 SQLite 数据库文件，如果不存在会自动创建
+con = sqlite3.connect("apple.db")
+# 创建游标对象，用于执行 SQL 语句
+cur = con.cursor()
 
+# 执行 SQL 语句创建表（如果表不存在）
+cur.execute("""
+CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    price REAL NOT NULL
+)
+""")
 
-class Hero(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(index=True)
-    age: int | None = Field(default=None, index=True)
-    secret_name: str
+# 插入一条数据到 items 表
+cur.execute(
+    "INSERT INTO items (name, price) VALUES (?, ?)",  # 使用占位符防止 SQL 注入
+    ("apple", 12.5),  # 插入苹果的价格
+)
 
+# 提交事务，将插入的数据保存到数据库
+con.commit()
 
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+# 查询所有数据
+res = cur.execute("SELECT id, name, price FROM items")
+# 获取查询结果的所有行
+items = res.fetchall()
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
+# 关闭数据库连接
+con.close()
 
-
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-
-
-def get_session():
-    with Session(engine) as session:
-        yield session
-
-
-SessionDep = Annotated[Session, Depends(get_session)]
-
-app = FastAPI()
-
-
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
-
-
-@app.post("/heroes/")
-def create_hero(hero: Hero, session: SessionDep) -> Hero:
-    session.add(hero)
-    session.commit()
-    session.refresh(hero)
-    return hero
-
-
-@app.get("/heroes/")
-def read_heroes(
-    session: SessionDep,
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
-) -> list[Hero]:
-    heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()
-    return heroes
-
-
-@app.get("/heroes/{hero_id}")
-def read_hero(hero_id: int, session: SessionDep) -> Hero:
-    hero = session.get(Hero, hero_id)
-    if not hero:
-        raise HTTPException(status_code=404, detail="Hero not found")
-    return hero
-
-
-@app.delete("/heroes/{hero_id}")
-def delete_hero(hero_id: int, session: SessionDep):
-    hero = session.get(Hero, hero_id)
-    if not hero:
-        raise HTTPException(status_code=404, detail="Hero not found")
-    session.delete(hero)
-    session.commit()
-    return {"ok": True}
+# 打印查询结果
+print(items)
