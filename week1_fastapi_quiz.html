@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FastAPI 第一阶段验收</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --ink: #172033;
+      --muted: #5d667a;
+      --line: #d8dfeb;
+      --panel: #ffffff;
+      --accent: #1463ff;
+      --accent-dark: #0e46b6;
+      --good: #147a4f;
+      --warn: #9a6400;
+      --bad: #b42318;
+      --soft-blue: #eaf1ff;
+      --soft-green: #eaf7f0;
+      --soft-red: #fff0ee;
+      font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 20px 40px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .subtle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      min-width: 390px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .metric-value {
+      font-weight: 700;
+      font-size: 22px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .question-area {
+      padding: 22px;
+      min-height: 540px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--soft-blue);
+      color: var(--accent-dark);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .progress {
+      height: 10px;
+      background: #e7ebf2;
+      border-radius: 999px;
+      overflow: hidden;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+      transition: width 180ms ease;
+    }
+
+    .question-title {
+      margin: 0 0 16px;
+      font-size: 22px;
+      line-height: 1.45;
+      letter-spacing: 0;
+    }
+
+    .scenario {
+      margin: 0 0 18px;
+      padding: 13px 14px;
+      border-left: 4px solid var(--accent);
+      background: #f4f7ff;
+      color: #25304a;
+      line-height: 1.7;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 13px 14px;
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      line-height: 1.55;
+      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+    }
+
+    .option:hover {
+      border-color: var(--accent);
+      background: #f7faff;
+    }
+
+    .option.selected {
+      border-color: var(--accent);
+      background: var(--soft-blue);
+    }
+
+    .option.correct {
+      border-color: #64b88d;
+      background: var(--soft-green);
+    }
+
+    .option.wrong {
+      border-color: #f2a59d;
+      background: var(--soft-red);
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 8px;
+      line-height: 1.7;
+      border: 1px solid var(--line);
+      background: #fbfcff;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button.action {
+      border: 0;
+      border-radius: 8px;
+      min-height: 42px;
+      padding: 0 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      color: #fff;
+      background: var(--accent);
+    }
+
+    .primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .secondary {
+      color: var(--ink);
+      background: #edf1f7;
+    }
+
+    .secondary:hover {
+      background: #e0e6f0;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    aside {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 9px;
+      margin: 0 0 20px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .checklist li {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #bac5d6;
+      margin-top: 7px;
+      flex: 0 0 auto;
+    }
+
+    .dot.done {
+      background: var(--good);
+    }
+
+    .result {
+      display: none;
+      padding: 22px;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .advice {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .advice-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px 14px;
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    .advice-item strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .code {
+      display: block;
+      padding: 10px 12px;
+      margin-top: 8px;
+      background: #101828;
+      color: #e6edf7;
+      border-radius: 7px;
+      overflow-x: auto;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 860px) {
+      header {
+        display: block;
+      }
+
+      .status-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        min-width: 0;
+        margin-top: 16px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .shell {
+        padding: 18px 12px 28px;
+      }
+
+      .status-strip,
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .question-area {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>FastAPI 第一阶段验收</h1>
+        <p class="subtle">完成 12 道题，检查你是否能进入第二周：SQL、CRUD 与可演示界面。</p>
+      </div>
+      <div class="status-strip" aria-label="当前进度">
+        <div class="metric">
+          <div class="metric-label">当前题目</div>
+          <div class="metric-value" id="currentMetric">1/12</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">已答正确</div>
+          <div class="metric-value" id="scoreMetric">0</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">掌握度</div>
+          <div class="metric-value" id="levelMetric">待测</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel question-area" id="quizPanel" aria-live="polite">
+        <div class="toolbar">
+          <span class="tag" id="categoryTag">基础概念</span>
+          <div class="progress" aria-label="答题进度">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </div>
+        <p class="scenario" id="scenario"></p>
+        <h2 class="question-title" id="questionTitle"></h2>
+        <div class="options" id="options"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="actions">
+          <button class="action secondary" id="restartBtn" type="button">重新开始</button>
+          <button class="action primary" id="submitBtn" type="button" disabled>提交答案</button>
+          <button class="action primary" id="nextBtn" type="button" style="display: none;">下一题</button>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2>第一阶段验收点</h2>
+        <ul class="checklist" id="checklist">
+          <li><span class="dot"></span><span>能解释 FastAPI app 与 ASGI 服务器的关系</span></li>
+          <li><span class="dot"></span><span>能区分 GET、POST、路径参数、查询参数、请求体</span></li>
+          <li><span class="dot"></span><span>能使用 Pydantic BaseModel 定义请求体</span></li>
+          <li><span class="dot"></span><span>能通过 /docs 测试接口并读懂 422 错误</span></li>
+          <li><span class="dot"></span><span>能用 Git 记录本阶段代码</span></li>
+        </ul>
+        <h2>建议启动命令</h2>
+        <span class="code">cd D:\work\study\FastAPI
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn test:app --reload</span>
+      </aside>
+    </div>
+
+    <section class="panel result" id="resultPanel">
+      <h2 id="resultTitle">验收结果</h2>
+      <p class="subtle" id="resultSummary"></p>
+      <div class="result-grid">
+        <div class="metric">
+          <div class="metric-label">总分</div>
+          <div class="metric-value" id="finalScore"></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">建议动作</div>
+          <div class="metric-value" id="finalAction"></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">薄弱项</div>
+          <div class="metric-value" id="weakCount"></div>
+        </div>
+      </div>
+      <div class="advice" id="adviceList"></div>
+      <div class="actions">
+        <button class="action secondary" id="reviewBtn" type="button">回到第一题复盘</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        category: "基础概念",
+        scenario: "你写了 app = FastAPI()，然后用 uvicorn 启动服务。",
+        title: "FastAPI app 更准确的含义是什么？",
+        options: [
+          "一个专门调用第三方 API 的 Python 工具",
+          "一个用于提供 API 的 Web 应用对象，负责接收请求、匹配路由并返回响应",
+          "一个数据库连接对象",
+          "一个前端页面框架"
+        ],
+        answer: 1,
+        explain: "app = FastAPI() 创建的是 Web 应用对象。Uvicorn 负责监听端口，FastAPI app 负责根据路由处理请求。",
+        topic: "app"
+      },
+      {
+        category: "启动机制",
+        scenario: "你的 main.py 里只有 app = FastAPI() 和若干 @app.get 路由。",
+        title: "为什么通常不用 python main.py 启动 FastAPI 服务？",
+        options: [
+          "因为 Python 不能运行异步函数",
+          "因为 FastAPI 只能用 Docker 运行",
+          "因为 main.py 只定义应用和路由，没有启动 HTTP 服务器监听端口",
+          "因为浏览器不能访问 Python 文件"
+        ],
+        answer: 2,
+        explain: "python main.py 只是执行文件。要让浏览器访问，需要 uvicorn 或 fastapi dev 这类 ASGI 服务器监听端口并运行 app。",
+        topic: "server"
+      },
+      {
+        category: "路由",
+        scenario: "你写了 @app.get('/items/{item_id}')。",
+        title: "这个装饰器的作用是什么？",
+        options: [
+          "把 GET /items/{item_id} 这个请求绑定到下面的函数",
+          "立刻执行下面的函数",
+          "把 item_id 保存到数据库",
+          "把函数变成普通 Python 类"
+        ],
+        answer: 0,
+        explain: "@app.get 是路由装饰器。它注册接口，不会在代码加载时直接执行业务函数。",
+        topic: "route"
+      },
+      {
+        category: "路径参数",
+        scenario: "接口定义为 @app.get('/users/{user_id}')，函数参数是 user_id: str。",
+        title: "访问 /users/dan 时，user_id 的值是什么？",
+        options: [
+          "users",
+          "{user_id}",
+          "None",
+          "dan"
+        ],
+        answer: 3,
+        explain: "路径中的动态部分 {user_id} 会接收 URL 中对应位置的值，所以 /users/dan 会得到 user_id='dan'。",
+        topic: "path"
+      },
+      {
+        category: "查询参数",
+        scenario: "接口定义为 @app.get('/items/')，函数参数是 skip: int = 0, limit: int = 10。",
+        title: "下面哪个 URL 正确传入 skip 和 limit？",
+        options: [
+          "/items/{skip}/{limit}",
+          "/items/?skip=1&limit=2",
+          "/items/skip=1/limit=2",
+          "/items/?skip:1&limit:2"
+        ],
+        answer: 1,
+        explain: "查询参数写在 ? 后面，多个参数用 & 连接。路径里没有出现的函数参数通常会被 FastAPI 识别为查询参数。",
+        topic: "query"
+      },
+      {
+        category: "请求体",
+        scenario: "你写了 @app.post('/items/')，函数参数是 item: Item，其中 Item 继承 BaseModel。",
+        title: "这个接口最适合怎样提交数据？",
+        options: [
+          "直接在浏览器地址栏输入 /items/?name=apple&price=12.5",
+          "用 GET 请求，把 JSON 写在路径里",
+          "用 POST 请求，把 JSON 放在请求体 body 中",
+          "只要访问 /items/，FastAPI 会自动生成数据"
+        ],
+        answer: 2,
+        explain: "Pydantic 模型参数一般表示请求体。POST /items/ 应该通过 /docs、curl、Postman 等工具提交 JSON body。",
+        topic: "body"
+      },
+      {
+        category: "Pydantic",
+        scenario: "你定义了 class Item(BaseModel): name: str; price: float。",
+        title: "BaseModel 在这里主要负责什么？",
+        options: [
+          "定义请求体的数据结构，并让 FastAPI 自动校验和转换数据",
+          "定义数据库表",
+          "启动 Web 服务",
+          "生成 HTML 页面"
+        ],
+        answer: 0,
+        explain: "BaseModel 是数据模型。FastAPI 会根据它校验请求体，例如 price 必须能转成 float。",
+        topic: "pydantic"
+      },
+      {
+        category: "Pydantic",
+        scenario: "create_item(item: Item) 中，你想在返回结果里新增 price_with_tax 字段。",
+        title: "item.model_dump() 的作用是什么？",
+        options: [
+          "删除 item 对象",
+          "把字典转换成数据库记录",
+          "把模型上传到 GitHub",
+          "把 Pydantic 模型对象转换成普通 Python 字典"
+        ],
+        answer: 3,
+        explain: "model_dump() 是 Pydantic v2 的方法。转成 dict 后，就可以用 update 增加字段。",
+        topic: "pydantic"
+      },
+      {
+        category: "校验",
+        scenario: "你写了 q: Annotated[str | None, Query(max_length=50)] = None。",
+        title: "这段参数定义说明了什么？",
+        options: [
+          "q 是必填路径参数，必须放在 URL 路径中",
+          "q 是可选查询参数，可以是 str 或 None，最大长度 50",
+          "q 是请求体，必须用 POST 提交",
+          "q 是数据库字段，最大长度 50"
+        ],
+        answer: 1,
+        explain: "Annotated[类型, Query规则] 用于给参数添加 FastAPI 校验信息。= None 表示这个参数可选。",
+        topic: "validation"
+      },
+      {
+        category: "自动文档",
+        scenario: "服务启动后，你访问 http://127.0.0.1:8000/docs。",
+        title: "/docs 页面是怎么来的？",
+        options: [
+          "浏览器自动扫描 Python 文件生成的",
+          "Uvicorn 手写生成的页面",
+          "FastAPI 根据路由、类型注解和 Pydantic 模型自动生成 OpenAPI 文档和 Swagger UI",
+          "只有安装数据库后才会出现"
+        ],
+        answer: 2,
+        explain: "FastAPI 的亮点之一就是自动生成 API 文档。/openapi.json 是原始规范，/docs 是交互式 Swagger UI。",
+        topic: "docs"
+      },
+      {
+        category: "错误理解",
+        scenario: "你访问 /items/?limit=200，但代码里 limit: Annotated[int, Query(le=100)] = 10。",
+        title: "最可能发生什么？",
+        options: [
+          "返回 422 校验错误，因为 limit 超过最大值 100",
+          "返回 404，因为 /items/ 不存在",
+          "自动把 200 改成 100",
+          "服务器一定崩溃"
+        ],
+        answer: 0,
+        explain: "422 表示请求格式或参数校验没有通过。这里路径存在，但参数 limit 不符合 Query(le=100)。",
+        topic: "validation"
+      },
+      {
+        category: "Git",
+        scenario: "你修改了 test.py 和 README.md，想把本次变化记录到 GitHub。",
+        title: "下面哪组命令最符合当前阶段的日常提交流程？",
+        options: [
+          "git push test.py -> git commit -> git add",
+          "git status -> git add . -> git commit -m \"update week1 api\" -> git push",
+          "python main.py -> git upload",
+          "git add GitHub -> git run"
+        ],
+        answer: 1,
+        explain: "git add 选择要提交的文件，git commit 在本地保存一个版本，git push 把提交推到 GitHub。",
+        topic: "git"
+      }
+    ];
+
+    const topicLabels = {
+      app: "FastAPI app",
+      server: "启动机制",
+      route: "路由装饰器",
+      path: "路径参数",
+      query: "查询参数",
+      body: "请求体",
+      pydantic: "Pydantic",
+      validation: "参数校验",
+      docs: "自动文档",
+      git: "Git"
+    };
+
+    const weakAdvice = {
+      app: "再复述一遍 app = FastAPI() 和 uvicorn 的分工：app 处理请求，uvicorn 监听端口并运行 app。",
+      server: "建议亲手比较 python test.py、python -m uvicorn test:app --reload、fastapi dev test.py 三者区别。",
+      route: "把 @app.get 和 @app.post 看成注册表：什么请求方法、什么路径、交给哪个函数。",
+      path: "再写 3 个路径参数接口，例如 /documents/{doc_id}、/jobs/{job_id}、/users/{user_id}。",
+      query: "多练 ?skip=0&limit=10&q=dan 这种 URL，明确查询参数都在问号后面。",
+      body: "用 /docs 测试 POST 请求，手动填写 JSON body，别用浏览器地址栏硬访问。",
+      pydantic: "把 BaseModel 当作请求体的结构说明书，重点掌握类型校验和 model_dump()。",
+      validation: "故意传错参数观察 422 错误，这会帮你建立调试直觉。",
+      docs: "多用 /docs 的 Try it out，观察它如何根据代码生成参数、请求体和响应说明。",
+      git: "每天固定四步：git status、git add .、git commit -m、git push。"
+    };
+
+    let index = 0;
+    let selected = null;
+    let score = 0;
+    let answered = false;
+    const misses = {};
+
+    const currentMetric = document.getElementById("currentMetric");
+    const scoreMetric = document.getElementById("scoreMetric");
+    const levelMetric = document.getElementById("levelMetric");
+    const progressBar = document.getElementById("progressBar");
+    const categoryTag = document.getElementById("categoryTag");
+    const scenario = document.getElementById("scenario");
+    const questionTitle = document.getElementById("questionTitle");
+    const options = document.getElementById("options");
+    const feedback = document.getElementById("feedback");
+    const submitBtn = document.getElementById("submitBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const quizPanel = document.getElementById("quizPanel");
+    const resultPanel = document.getElementById("resultPanel");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultSummary = document.getElementById("resultSummary");
+    const finalScore = document.getElementById("finalScore");
+    const finalAction = document.getElementById("finalAction");
+    const weakCount = document.getElementById("weakCount");
+    const adviceList = document.getElementById("adviceList");
+    const reviewBtn = document.getElementById("reviewBtn");
+    const checklistDots = Array.from(document.querySelectorAll(".dot"));
+
+    function levelText() {
+      const ratio = score / questions.length;
+      if (index === 0 && score === 0) return "待测";
+      if (ratio >= 0.85) return "扎实";
+      if (ratio >= 0.65) return "可进入";
+      return "需补强";
+    }
+
+    function updateMetrics() {
+      currentMetric.textContent = `${Math.min(index + 1, questions.length)}/${questions.length}`;
+      scoreMetric.textContent = String(score);
+      levelMetric.textContent = levelText();
+      progressBar.style.width = `${(index / questions.length) * 100}%`;
+      checklistDots.forEach((dot, dotIndex) => {
+        if (index > dotIndex * 2) dot.classList.add("done");
+      });
+    }
+
+    function renderQuestion() {
+      const q = questions[index];
+      selected = null;
+      answered = false;
+      categoryTag.textContent = q.category;
+      scenario.textContent = q.scenario;
+      questionTitle.textContent = q.title;
+      feedback.className = "feedback";
+      feedback.innerHTML = "";
+      submitBtn.disabled = true;
+      submitBtn.style.display = "inline-block";
+      nextBtn.style.display = "none";
+      options.innerHTML = "";
+
+      q.options.forEach((option, optionIndex) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option";
+        btn.textContent = option;
+        btn.addEventListener("click", () => selectOption(optionIndex));
+        options.appendChild(btn);
+      });
+
+      updateMetrics();
+    }
+
+    function selectOption(optionIndex) {
+      if (answered) return;
+      selected = optionIndex;
+      submitBtn.disabled = false;
+      Array.from(options.children).forEach((btn, btnIndex) => {
+        btn.classList.toggle("selected", btnIndex === optionIndex);
+      });
+    }
+
+    function submitAnswer() {
+      if (selected === null || answered) return;
+      answered = true;
+      const q = questions[index];
+      const isCorrect = selected === q.answer;
+
+      Array.from(options.children).forEach((btn, btnIndex) => {
+        btn.disabled = true;
+        if (btnIndex === q.answer) btn.classList.add("correct");
+        if (btnIndex === selected && !isCorrect) btn.classList.add("wrong");
+      });
+
+      if (isCorrect) {
+        score += 1;
+        feedback.innerHTML = `<strong style="color: var(--good);">回答正确</strong>${q.explain}`;
+      } else {
+        misses[q.topic] = (misses[q.topic] || 0) + 1;
+        feedback.innerHTML = `<strong style="color: var(--bad);">需要复盘</strong>${q.explain}`;
+      }
+
+      feedback.classList.add("show");
+      submitBtn.style.display = "none";
+      nextBtn.style.display = "inline-block";
+      nextBtn.textContent = index === questions.length - 1 ? "查看结果" : "下一题";
+      updateMetrics();
+    }
+
+    function nextQuestion() {
+      if (index === questions.length - 1) {
+        showResult();
+        return;
+      }
+      index += 1;
+      renderQuestion();
+    }
+
+    function showResult() {
+      quizPanel.style.display = "none";
+      resultPanel.classList.add("show");
+      progressBar.style.width = "100%";
+      const percent = Math.round((score / questions.length) * 100);
+      const weakTopics = Object.keys(misses);
+
+      finalScore.textContent = `${score}/${questions.length}`;
+      weakCount.textContent = String(weakTopics.length);
+
+      if (percent >= 85) {
+        resultTitle.textContent = "可以进入第二周";
+        finalAction.textContent = "进入";
+        resultSummary.textContent = "你的第一阶段概念已经比较扎实，可以开始 SQL、CRUD 和基础界面。进入第二周时保持代码输出节奏。";
+      } else if (percent >= 65) {
+        resultTitle.textContent = "可以进入第二周，但要带着问题补";
+        finalAction.textContent = "边走边补";
+        resultSummary.textContent = "你已经具备继续推进的基础，但建议先把错题涉及的概念复述一遍，再进入数据库和 CRUD。";
+      } else {
+        resultTitle.textContent = "建议先补第一阶段";
+        finalAction.textContent = "补强";
+        resultSummary.textContent = "现在直接进入第二周会有点吃力。建议用 test.py 再重写一遍 6 个接口，并重点复盘错题。";
+      }
+
+      adviceList.innerHTML = "";
+      const baseAdvice = [
+        {
+          title: "第二周主线",
+          text: "开始学习 SQL 与 CRUD：先用 SQLite 保存 documents、items、messages 这类基础数据，再让 FastAPI 接口读写数据库。"
+        },
+        {
+          title: "不要急着上 RAG",
+          text: "第二周的目标不是调用大模型，而是把“接口接收数据、数据库保存数据、接口返回数据”这条链路打通。"
+        },
+        {
+          title: "建议产出",
+          text: "在现有 test.py 的基础上，新建一个 crud_app.py，实现 items 的创建、查询、列表读取和删除。"
+        }
+      ];
+
+      baseAdvice.forEach(addAdvice);
+
+      if (weakTopics.length > 0) {
+        weakTopics.forEach((topic) => {
+          addAdvice({
+            title: `薄弱项：${topicLabels[topic]}`,
+            text: weakAdvice[topic]
+          });
+        });
+      } else {
+        addAdvice({
+          title: "第一阶段表现",
+          text: "没有明显薄弱项。下一步可以把 README 写得更像项目说明，并把 GitHub 仓库整理干净。"
+        });
+      }
+    }
+
+    function addAdvice(item) {
+      const div = document.createElement("div");
+      div.className = "advice-item";
+      div.innerHTML = `<strong>${item.title}</strong>${item.text}`;
+      adviceList.appendChild(div);
+    }
+
+    function restart() {
+      index = 0;
+      selected = null;
+      score = 0;
+      answered = false;
+      Object.keys(misses).forEach((key) => delete misses[key]);
+      quizPanel.style.display = "block";
+      resultPanel.classList.remove("show");
+      checklistDots.forEach((dot) => dot.classList.remove("done"));
+      renderQuestion();
+    }
+
+    submitBtn.addEventListener("click", submitAnswer);
+    nextBtn.addEventListener("click", nextQuestion);
+    restartBtn.addEventListener("click", restart);
+    reviewBtn.addEventListener("click", restart);
+
+    renderQuestion();
+  </script>
+</body>
+</html>
