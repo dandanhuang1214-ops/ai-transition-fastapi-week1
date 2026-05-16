@@ -1,97 +1,119 @@
-# FastAPI Week 1 Practice
+# AI 转行应用开发 — 学习仓库
 
-这是 AI 转行应用开发第一阶段的 FastAPI 练习项目。
+从嵌入式开发转行 AI 应用开发，12 周系统学习计划。目标岗位：**AI 应用开发 / RAG / Agent 工程师**。
 
-## 当前内容
-
-- FastAPI app
-- GET 接口
-- POST 接口
-- 路径参数
-- 查询参数
-- 请求体
-- Pydantic BaseModel
-- 自动 API 文档
-
-## 启动方式
-
-```powershell
-fastapi dev main.py
-```
-
-## 关于 Git 的一些基础命令
-
-- `git status`
-  - 查看当前工作区和暂存区的修改状态。
-  - 用来确认哪些文件已修改、哪些文件已准备提交。
-- `git add .`
-  - 将所有修改过的文件添加到暂存区。
-  - 相当于告诉 Git“我想把这些改动包含进下一次提交”。
-- `git commit -m "说明文字"`
-  - 将暂存区中的改动保存为一个本地提交。
-  - `-m` 后面跟的是本次提交的说明，建议简短清晰。
-- `git push`
-  - 把本地分支的提交上传到远程仓库（例如 GitHub）。
-  - 一般需要在本地有新提交后才能推送。
-
-> 备注：`git push` 只会上传已经提交的内容，不能直接上传工作区中的未提交改动。也就是说，通常你需要先 `git add`，再 `git commit`，最后 `git push`。
-
-- `git pull`
-  - 从远程仓库拉取最新改动并合并到当前分支。
-  - 常用于同步远程仓库与本地仓库。
-- `git log`
-  - 查看历史提交记录。
-  - 可以帮助你确认已经提交了哪些版本。
-- `git diff`
-  - 查看当前修改与上一版本之间的差异。
-  - 对比未提交内容时非常有用。
+> 当前进度：**Week 2 完成** | 下一步：Week 3 — LLM API、Prompt、结构化输出
 
 ---
 
-# FastAPI Week 2 Practice
+## 技术栈
 
-这是一个基于 FastAPI 和 SQLModel 的简单 REST API。
+| 层级 | 技术 |
+|------|------|
+| 后端框架 | FastAPI (Python) |
+| 数据库 | SQLite → PostgreSQL |
+| ORM | SQLAlchemy 2.0 / SQLModel |
+| 前端 | Streamlit |
+| 向量库 | Chroma / Qdrant |
+| 大模型 | DeepSeek / 通义千问 (OpenAI 兼容接口) |
+| Agent | LangGraph |
+| 部署 | Docker / Docker Compose |
 
-## 当前内容
+---
 
-- SQLModel 模型定义（HeroBase、Hero、HeroPublic、HeroCreate、HeroUpdate）
-- SQLite 数据库连接和会话管理
-- POST /heroes/：创建英雄（返回 HeroPublic，不含 secret_name）
-- GET /heroes/：查询英雄列表（支持分页 offset 和 limit）
-- GET /heroes/{hero_id}：查询单个英雄
-- PATCH /heroes/{hero_id}：部分更新英雄（只更新传入字段）
-- DELETE /heroes/{hero_id}：删除英雄
-- 依赖注入数据库会话（SessionDep）
-- 自动 API 文档生成
+## 项目结构
 
-## 启动方式
-
-```powershell
-fastapi dev test2.py
+```
+FastAPI/
+├── Readme.md                          ← 本文件
+├── .gitignore
+├── AI转行应用开发学习计划_周计划与资源版.docx   ← 完整 12 周学习计划
+│
+├── Week 1 — FastAPI 基础
+│   ├── test1.py                       # FastAPI 完整入门：路由、参数、Pydantic、文档
+│   ├── main.py                        # 补充练习：AfterValidator、依赖注入
+│   └── week1_fastapi_quiz.html        # 第一阶段自测（12 题）
+│
+├── Week 2 — 数据库 + Streamlit 界面
+│   ├── week2_crud.py                  # 原生 SQLite3 CRUD 入门
+│   ├── week2_sql.py                   # SQLAlchemy 2.0 完整教程（10 章）
+│   ├── week2_streamlit.py             # Streamlit session_state 实践（计数器）
+│   ├── week2_config.py                # 集中配置：数据库、API、切分参数
+│   ├── week2_models.py                # RAG 四表模型：Document/Chunk/Conversation/Message
+│   ├── week2_doc_api.py               # FastAPI 后端：文档管理 API（12 个接口）
+│   ├── week2_streamlit_app.py         # Streamlit 前端：四页完整界面
+│   ├── week2_knowledge_summary.md     # 第二周全部知识点总结（12 章）
+│   ├── week2_database_notes.pdf       # 数据库学习笔记
+│   └── test2.py                       # FastAPI + SQLModel Heroes CRUD 示例
+│
+└── Week 3（待开始）— LLM API / Prompt / 结构化输出
 ```
 
 ---
 
-# Week 2 CRUD Practice
+## 已完成的验收标准
 
-这是一个使用原生 SQLite3 模块的简单 CRUD 示例。
+### Week 1 — FastAPI 基础
 
-## 当前内容
+- [x] 本地启动 FastAPI，使用 `/docs` 查看和测试接口
+- [x] 掌握 GET/POST、路径参数、查询参数、请求体
+- [x] 使用 Pydantic BaseModel 定义和校验数据
+- [x] 使用 Git 完成 add → commit → push 流程
+- [x] 通过第一阶段 12 题自测
+- [x] 能解释 FastAPI、Pydantic、OpenAPI 各自的职责
 
-- SQLite 数据库连接
-- 创建表结构
-- 插入数据
-- 查询数据
-- 事务提交
+### Week 2 — 数据库 + Streamlit
 
-## 运行方式
+- [x] 使用 SQLModel 设计 RAG 核心表（documents / chunks / conversations / messages）
+- [x] FastAPI 实现完整文档 CRUD（含自动文本切分）
+- [x] Streamlit 前端调用 FastAPI 后端（前后端分离）
+- [x] 掌握 session_state、表单回调、侧边栏导航
+- [x] 能解释为什么 RAG 需要 documents 和 chunks 分开存储
+- [x] 本周 6+ 次 Git 提交，README 持续更新
+
+---
+
+## 快速启动
 
 ```powershell
-python week2_crud.py
+# 激活虚拟环境
+.\.venv\Scripts\Activate.ps1
+
+# Week 1：FastAPI 入门
+fastapi dev test1.py
+# 访问 http://127.0.0.1:8000/docs
+
+# Week 2：文档管理系统（需要同时启动两个服务）
+# 终端 1 — 后端
+fastapi dev week2_doc_api.py
+# 终端 2 — 前端
+streamlit run week2_streamlit_app.py
 ```
 
-## 输出示例
+---
+
+## 学习资源
+
+- [FastAPI 官方教程](https://fastapi.tiangolo.com/tutorial/)
+- [Streamlit 官方文档](https://docs.streamlit.io/)
+- [SQLAlchemy 2.0 教程](https://docs.sqlalchemy.org/20/tutorial/index.html)
+- [DeepSeek API 文档](https://api-docs.deepseek.com/)
+- [LangChain 文档](https://docs.langchain.com/oss/python/langchain/retrieval)
+- [LangGraph 文档](https://docs.langchain.com/oss/python/langgraph/overview)
+
+---
+
+## Git 提交规范
+
+每周至少 5 次提交，使用中文说明：
 
 ```
-[(1, 'apple', 12.5)]
+git status          # 查看修改状态
+git add <文件>       # 暂存要提交的文件
+git commit -m "说明"  # 本地提交
+git push            # 推送到 GitHub
 ```
+
+---
+
+> 开始日期：2026-04 | 预计完成：12 周 | 下一里程碑：Week 3 — LLM API 接入
